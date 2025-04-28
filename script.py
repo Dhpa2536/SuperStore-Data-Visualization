@@ -22,26 +22,26 @@ df = df[df['Order Date'].dt.year.isin([2014, 2015])]
 # Add "All Regions" option
 regions = ['All'] + sorted(df['Region'].unique().tolist())
 
-# Dropdown without initialization
+# CORRECTED DROPDOWN - Uses selection_point with proper value format
 region_dropdown = alt.selection_point(
     fields=['Region'],
     bind=alt.binding_select(options=regions, name='Select Region:'),
-    name='region_filter'
+    name='region_filter',
+    value=[{'Region': 'All'}]  # <-- Must be a list of objects
 )
 
-# Sales Chart - Thousand Formatting and Legend Position
+# Sales Chart
 sales = alt.Chart(df).mark_bar().encode(
     x=alt.X('sum(Sales):Q', title='Sales ($)')
-        .axis(format='$.1s',  # Format as thousands
-              labelAngle=0),
+        .axis(format='$.1s', labelAngle=0),
     y=alt.Y('Category:N', title='', sort='-x'),
     color=alt.Color('Region:N', legend=alt.Legend(
         title="Region",
         labelLimit=0,
         columns=2,
-        orient='top' ,# Legend on top
+        orient='top',
         direction='horizontal',
-        symbolLimit=0, # Ensure all symbols are visible
+        symbolLimit=0,
     ))
 ).transform_filter(
     "region_filter.Region == 'All' || datum.Region == region_filter.Region"
@@ -101,7 +101,7 @@ dashboard = alt.vconcat(
     labelFontSize=12,
     titleFontSize=14
 ).configure_title(
-    fontSize=32,  # Make dashboard title bigger
+    fontSize=32,
     anchor='middle'
 ).properties(
     title='Superstore Analysis Dashboard (2014-2015)',
